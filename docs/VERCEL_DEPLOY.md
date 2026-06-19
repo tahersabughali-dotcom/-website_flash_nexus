@@ -1,41 +1,95 @@
 # Vercel Deployment — Flash Nexus
 
-## Problem
+## Build succeeded but deploy failed?
 
-If the Vercel **Root Directory** is the repo root, `npm install` only runs at root.  
-The Next.js app lives in `flash-nexus/` with its own `package.json`, so `next` is not found:
+If you see:
 
 ```text
-sh: line 1: next: command not found
+Error: No Output Directory named "public" found after the Build completed.
 ```
 
-## Fix (in repo)
+**Cause:** Vercel is treating the project as a **static site** (Output Directory = `public`) instead of **Next.js**.
 
-- Root `vercel.json` — installs and builds inside `flash-nexus/`
-- Root `package.json` — `postinstall` runs `npm install --prefix flash-nexus`
-- `flash-nexus/package-lock.json` — committed for reproducible installs
+The Next.js build **did succeed** — only the deploy step failed.
 
-## Recommended Vercel project settings
+---
 
-In **Vercel → Project → Settings → General → Root Directory**:
+## Required Vercel project settings
 
-Set to: **`flash-nexus`**
+Open **Vercel → Project → Settings**:
 
-Then Vercel uses native Next.js detection and you can remove custom install/build overrides later if desired.
+### 1. Root Directory (General)
 
-## Environment variables (Vercel dashboard)
+Set to:
 
-Add in **Project → Settings → Environment Variables** (never commit):
+```text
+flash-nexus
+```
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (Production/Preview server only)
+### 2. Framework Preset (Build & Development)
 
-## Local build (same as CI)
+Set to: **Next.js** (not "Other")
+
+### 3. Output Directory (Build & Development)
+
+**Leave empty** — delete `public` if it is set there.
+
+Next.js uses `.next` internally; you must not set Output Directory to `public`.
+
+### 4. Install / Build commands
+
+When Root Directory is `flash-nexus`, use defaults:
+
+- Install: `npm install`
+- Build: `npm run build`
+
+Or leave blank — Vercel auto-detects from `flash-nexus/package.json`.
+
+---
+
+## Environment variables
+
+**Project → Settings → Environment Variables** (never commit):
+
+| Variable | Environments |
+|----------|----------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview (server only) |
+
+---
+
+## Repo layout
+
+| Path | Role |
+|------|------|
+| `flash-nexus/` | Next.js app (Vercel Root Directory) |
+| `flash-nexus/vercel.json` | Framework: Next.js |
+| Root `vercel.json` | Fallback if Root Directory is repo root |
+| Root `package.json` | Local dev proxy scripts + `postinstall` |
+
+---
+
+## Local build
 
 From repo root:
 
 ```bash
 npm install
 npm run build
+```
+
+---
+
+## After changing settings
+
+1. Save Vercel settings
+2. **Redeploy** (Deployments → … → Redeploy)
+
+Expected log ending:
+
+```text
+✓ Generating static pages (45/45)
+Build Completed
+Deployment Ready
 ```
