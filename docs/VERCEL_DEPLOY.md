@@ -1,95 +1,65 @@
 # Vercel Deployment — Flash Nexus
 
-## Build succeeded but deploy failed?
+## Correct setup (required)
 
-If you see:
+**Vercel → Project → Settings**
 
-```text
-Error: No Output Directory named "public" found after the Build completed.
-```
+| Setting | Value |
+|---------|--------|
+| **Root Directory** | `flash-nexus` |
+| **Framework Preset** | Next.js |
+| **Install Command** | *(empty — use default `npm install`)* |
+| **Build Command** | *(empty — use default `npm run build`)* |
+| **Output Directory** | *(empty — do NOT use `public`)* |
 
-**Cause:** Vercel is treating the project as a **static site** (Output Directory = `public`) instead of **Next.js**.
-
-The Next.js build **did succeed** — only the deploy step failed.
+Config file: `flash-nexus/vercel.json` (framework: Next.js only).
 
 ---
 
-## Required Vercel project settings
+## Error: `flash-nexus/flash-nexus/package.json` not found
 
-Open **Vercel → Project → Settings**:
+**Cause:** Root Directory is already `flash-nexus`, but Install Command still runs:
 
-### 1. Root Directory (General)
-
-Set to:
-
-```text
-flash-nexus
+```bash
+npm install --prefix flash-nexus
 ```
 
-### 2. Framework Preset (Build & Development)
+That looks for `flash-nexus/flash-nexus/` — wrong path.
 
-Set to: **Next.js** (not "Other")
+**Fix:**
 
-### 3. Output Directory (Build & Development)
+1. Settings → Build & Development → **Install Command** → clear / leave default
+2. Settings → Build & Development → **Build Command** → clear / leave default
+3. Redeploy
 
-**Leave empty** — delete `public` if it is set there.
+Do **not** use `--prefix flash-nexus` when Root Directory is `flash-nexus`.
 
-Next.js uses `.next` internally; you must not set Output Directory to `public`.
+---
 
-### 4. Install / Build commands
+## Error: `next: command not found`
 
-When Root Directory is `flash-nexus`, use defaults:
+**Cause:** Root Directory was repo root and dependencies were not installed in `flash-nexus/`.
 
-- Install: `npm install`
-- Build: `npm run build`
-
-Or leave blank — Vercel auto-detects from `flash-nexus/package.json`.
+**Fix:** Set Root Directory to `flash-nexus` (see table above).
 
 ---
 
 ## Environment variables
 
-**Project → Settings → Environment Variables** (never commit):
+Never commit secrets. Add in Vercel → Environment Variables:
 
-| Variable | Environments |
-|----------|----------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview |
-| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview (server only) |
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ---
 
-## Repo layout
-
-| Path | Role |
-|------|------|
-| `flash-nexus/` | Next.js app (Vercel Root Directory) |
-| `flash-nexus/vercel.json` | Framework: Next.js |
-| Root `vercel.json` | Fallback if Root Directory is repo root |
-| Root `package.json` | Local dev proxy scripts + `postinstall` |
-
----
-
-## Local build
-
-From repo root:
+## Local development (from repo root)
 
 ```bash
 npm install
+npm run dev
 npm run build
 ```
 
----
-
-## After changing settings
-
-1. Save Vercel settings
-2. **Redeploy** (Deployments → … → Redeploy)
-
-Expected log ending:
-
-```text
-✓ Generating static pages (45/45)
-Build Completed
-Deployment Ready
-```
+Root `package.json` uses `--prefix flash-nexus` for local scripts only — not for Vercel when Root Directory is `flash-nexus`.
