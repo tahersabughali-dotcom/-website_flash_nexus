@@ -1,6 +1,6 @@
 # Workspace root — app dependencies live in flash-nexus/
-node_modules/
-package-lock.json
+/node_modules/
+/package-lock.json
 
 # Secrets — never commit
 .env*

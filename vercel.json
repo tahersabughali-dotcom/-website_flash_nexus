@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install --prefix flash-nexus",
+  "buildCommand": "npm run build --prefix flash-nexus",
+  "devCommand": "npm run dev --prefix flash-nexus"
+}

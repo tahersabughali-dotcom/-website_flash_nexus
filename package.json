@@ -3,6 +3,7 @@
   "private": true,
   "description": "Run npm scripts from workspace root — app lives in flash-nexus/",
   "scripts": {
+    "postinstall": "npm install --prefix flash-nexus",
     "dev": "npm run dev --prefix flash-nexus",
     "build": "npm run build --prefix flash-nexus",
     "start": "npm run start --prefix flash-nexus",
