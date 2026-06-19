@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" fill="none" role="img" aria-label="Flash Nexus Financial Networks">
+  <defs>
+    <linearGradient id="fn-full-bg" x1="4" y1="4" x2="56" y2="68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E40AF"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon -->
+  <rect x="0" y="4" width="64" height="64" rx="14" fill="url(#fn-full-bg)"/>
+  <path d="M15 17h19v3.5H20v7.5h12v3.5H20v11.5h-5V17z" fill="#FFFFFF"/>
+  <path d="M13 24.5h24" stroke="#BFDBFE" stroke-width="2" stroke-linecap="round"/>
+  <path d="M13 28.5h20" stroke="#93C5FD" stroke-width="1.75" stroke-linecap="round"/>
+  <path d="M13 32.5h16" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M38 17h4.5v30H38l-9.5-19v19h-4.5V17h4.5l9.5 19V17z" fill="#FFFFFF"/>
+  <!-- Wordmark -->
+  <text x="76" y="38" fill="#1E40AF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="-0.02em">Flash Nexus</text>
+  <!-- Subtitle -->
+  <text x="77" y="56" fill="#3B82F6" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="0.22em">FINANCIAL NETWORKS</text>
+</svg>

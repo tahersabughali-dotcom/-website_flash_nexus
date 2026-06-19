@@ -1,0 +1,41 @@
+{
+  "name": "flash-nexus",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "verify:env": "node scripts/verify-env-masked.cjs",
+    "db:fetch-service-role": "node scripts/phase-2b2-apply.cjs fetch-service-role",
+    "db:apply-all": "node scripts/phase-2b2-apply.cjs apply-all",
+    "db:sync-migrations": "node scripts/sync-db-migrations.cjs",
+    "db:push": "npm run db:sync-migrations && npx supabase db push",
+    "db:seed": "node scripts/phase-2b2-apply.cjs seed",
+    "db:report": "node scripts/phase-2b2-apply.cjs report",
+    "db:link": "node scripts/phase-2b2-apply.cjs link",
+    "db:types": "node scripts/phase-2b2-apply.cjs types"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "supabase": "^2.107.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

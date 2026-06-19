@@ -1,3 +1,12 @@
 # Workspace root — app dependencies live in flash-nexus/
 node_modules/
 package-lock.json
+
+# Secrets — never commit
+.env*
+!.env.example
+**/.env*
+!**/.env.example
+
+# Nested git backup (recovery only)
+_backup/
