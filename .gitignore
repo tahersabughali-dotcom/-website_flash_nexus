@@ -1,0 +1,3 @@
+# Workspace root — app dependencies live in flash-nexus/
+node_modules/
+package-lock.json

@@ -1,48 +1,87 @@
 # Flash Nexus — Phase 2B-2: Apply Dev Schema
 
 **Phase:** 2B-2  
-**Status:** ⚠️ **BLOCKED** — Pre-flight failed (empty environment file)  
-**Last Updated:** June 2026  
+**Status:** ⚠️ **BLOCKED** — `.env.local` on disk has empty values; Supabase CLI not linked  
+**Last Updated:** June 2026 (latest verification run)  
 
 ---
 
-## 1. Pre-Flight Results
+## 1. Pre-Flight Results (Latest Run)
 
 | Check | Result |
 |-------|--------|
-| `.env.local` exists | ⚠️ Workspace root file exists but is **empty** |
-| `flash-nexus/.env.local` | ❌ **Missing** (Next.js reads env from `flash-nexus/`) |
-| `NEXT_PUBLIC_SUPABASE_URL` | ❌ Not set |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ Not set |
-| `SUPABASE_SERVICE_ROLE_KEY` | ❌ Not set |
-| Git ignores `.env.local` | ✅ `flash-nexus/.gitignore` has `.env*` + `!.env.example` |
-| Secrets printed | ✅ None printed in logs or committed files |
+| `.env.local` file exists | ✅ Yes (`flash-nexus/.env.local`) |
+| On-disk file size | ❌ **83 bytes** — keys present, **values empty** |
+| Editor vs disk | ⚠️ If values appear in IDE, **save the file** (Ctrl+S) before retry |
+| `NEXT_PUBLIC_SUPABASE_URL` | ❌ EMPTY on disk |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ EMPTY on disk (or use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` after save) |
+| `SUPABASE_SERVICE_ROLE_KEY` | ❌ EMPTY on disk — **required** |
+| `node scripts/verify-env.cjs` | ❌ **Failed** (exit code 1) |
+| Supabase CLI logged in | ❌ Not verified (blocked by env) |
+| Supabase project linked | ❌ `LINKED=NO` |
+| Secrets printed | ✅ None |
 
-**Action required before apply:** Copy `flash-nexus/.env.example` → `flash-nexus/.env.local` and add development Supabase credentials from Dashboard → Project Settings → API.
-
-The file `flash-nexus-dev` at workspace root is a placeholder (labels only) — use **`flash-nexus/.env.local`** for the Next.js app.
+**Stop rule applied:** Phase 2B-2 did not apply migrations because required env keys are missing on disk.
 
 ---
 
-## 2. What Was Completed (Infrastructure Only)
+## 2. What You Must Do (Simple Steps — Development Only)
 
-Because credentials were missing, migrations were **not applied** to Supabase. The following was prepared:
+### A) Save and complete `.env.local`
 
-| Item | Status |
-|------|--------|
-| Supabase CLI (`supabase` devDependency) | ✅ Installed v2.107.0 |
-| `supabase init` | ✅ `supabase/config.toml` created |
-| Migration sync script | ✅ `scripts/sync-db-migrations.cjs` |
-| CLI migrations copy | ✅ 10 files in `supabase/migrations/` |
-| npm scripts | ✅ `db:sync-migrations`, `db:push`, `db:types` |
-| Apply guide | ✅ `database/APPLY_MIGRATIONS.md` |
-| Smoke test doc | ✅ `database/SMOKE_TEST_PHASE_2B.md` |
+Open `flash-nexus/.env.local` and ensure **all three** are filled (from Supabase Dashboard → Project Settings → API):
 
-### Migration sync strategy (Option C)
+1. `NEXT_PUBLIC_SUPABASE_URL=...`
+2. `NEXT_PUBLIC_SUPABASE_ANON_KEY=...`  
+   *(or keep `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — supported in code)*
+3. `SUPABASE_SERVICE_ROLE_KEY=...`  
+   *(server only — never expose in browser)*
 
-- **`database/migrations/`** = source of truth (edit here)
-- **`supabase/migrations/`** = CLI-compatible copy (run `npm run db:sync-migrations`)
-- Original files unchanged; sync adds header comment only
+**Save the file** (Ctrl+S), then verify:
+
+```bash
+cd flash-nexus
+node scripts/verify-env.cjs
+```
+
+Must exit **0** with all keys showing `SET` or `ALIAS_OK`.
+
+### B) Link Supabase CLI (one-time)
+
+```bash
+cd flash-nexus
+npx supabase login
+```
+
+Browser opens — sign in to your **development** Supabase account.
+
+Then either:
+
+```bash
+npm run db:link
+```
+
+*(reads project ref from saved URL — no secrets printed)*
+
+Or manually:
+
+```bash
+npx supabase link --project-ref YOUR_PROJECT_REF
+```
+
+**Reference ID:** Dashboard → Project Settings → General → Reference ID.
+
+You may be asked for the **database password** (set when the project was created).
+
+### C) Apply schema, seed, types
+
+```bash
+npm run db:push
+npm run db:seed
+npx supabase db execute --file database/smoke-test-phase-2b.sql
+npm run db:types
+npm run build && npm run lint
+```
 
 ---
 
@@ -50,9 +89,9 @@ Because credentials were missing, migrations were **not applied** to Supabase. T
 
 | Status | Detail |
 |--------|--------|
-| **NOT APPLIED** | Blocked — no Supabase credentials configured |
+| **NOT APPLIED** | Blocked — env + link incomplete |
 
-When unblocked, apply in order:
+When unblocked, migrations run in order via `npm run db:push`:
 
 1. `001_extensions_and_triggers.sql`
 2. `002_profiles.sql`
@@ -65,22 +104,13 @@ When unblocked, apply in order:
 9. `009_security_functions.sql`
 10. `010_rls_policies_enhanced.sql`
 
-**Command (after link + env):**
-
-```bash
-cd flash-nexus
-npx supabase login
-npx supabase link --project-ref YOUR_PROJECT_REF
-npm run db:push
-```
-
 ---
 
 ## 4. Seed Applied
 
 | Status | Detail |
 |--------|--------|
-| **NOT APPLIED** | Run after migrations in SQL Editor or via psql |
+| **NOT APPLIED** | Run `npm run db:seed` after migrations |
 
 File: `database/seeds/001_seed_roles_permissions.sql`
 
@@ -90,8 +120,22 @@ File: `database/seeds/001_seed_roles_permissions.sql`
 
 | Status | Detail |
 |--------|--------|
-| Document created | ✅ `database/SMOKE_TEST_PHASE_2B.md` |
+| Document | ✅ `database/SMOKE_TEST_PHASE_2B.md` |
+| SQL bundle | ✅ `database/smoke-test-phase-2b.sql` |
 | Executed | ❌ Pending migration apply |
+
+| # | Check | Pass |
+|---|-------|------|
+| 1 | 9 tables exist | ☐ |
+| 2 | RLS enabled on all | ☐ |
+| 3 | 6 roles seeded | ☐ |
+| 4 | 23 permissions seeded | ☐ |
+| 5 | role_permissions mapped | ☐ |
+| 6 | 5 helper functions exist | ☐ |
+| 7 | Public profile policies exist | ☐ |
+| 8 | Cross-tenant denial | ☐ Phase 2C |
+| 9 | audit_log no user INSERT | ☐ |
+| 10 | updated_at triggers | ☐ |
 
 ---
 
@@ -99,68 +143,53 @@ File: `database/seeds/001_seed_roles_permissions.sql`
 
 | Status | Detail |
 |--------|--------|
-| **NOT GENERATED** | Requires linked project + applied schema |
+| **NOT GENERATED** | `lib/supabase/types.ts` is still a placeholder |
 
-**Command (after apply):**
-
-```bash
-cd flash-nexus
-npm run db:types
-```
+Command after schema apply: `npm run db:types`
 
 ---
 
-## 7. Files Created / Modified
+## 7. Build / Lint
 
-| File | Change |
+| Command | Result (this run) |
+|---------|-------------------|
+| `npm run build` | ⏭ Not run — blocked at pre-flight |
+| `npm run lint` | ⏭ Not run — blocked at pre-flight |
+
+*(Previous runs: both passed when env was not required for build.)*
+
+---
+
+## 8. Infrastructure Ready (No Changes Needed)
+
+| Item | Status |
 |------|--------|
-| `supabase/config.toml` | Created by `supabase init` |
-| `supabase/migrations/*.sql` | 10 synced copies |
-| `scripts/sync-db-migrations.cjs` | New |
-| `database/APPLY_MIGRATIONS.md` | New |
-| `database/SMOKE_TEST_PHASE_2B.md` | New |
-| `database/README.md` | Updated apply status |
-| `package.json` | supabase devDep + db scripts |
-| `docs/PHASE_2B2_APPLY_DEV_SCHEMA.md` | This file |
+| `database/migrations/` 001–010 | ✅ |
+| `supabase/migrations/` synced copies | ✅ |
+| `scripts/phase-2b2-apply.cjs` | ✅ |
+| `scripts/verify-env.cjs` | ✅ |
+| npm scripts: `db:link`, `db:push`, `db:seed`, `db:types` | ✅ |
 
 ---
 
-## 8. Build / Lint
+## 9. Ready for Phase 2C?
 
-Run after infrastructure changes — app must build without Supabase env vars.
-
----
-
-## 9. What Was NOT Implemented
-
-- Migrations not applied to any Supabase project
-- Seed not run
-- Types not regenerated
-- No auth UI, registration, route protection, middleware
-- No financial tables
-- No test users created
+| Requirement | Ready? |
+|-------------|--------|
+| Env keys on disk | ❌ |
+| Supabase linked | ❌ |
+| Migrations applied | ❌ |
+| Seed applied | ❌ |
+| Types generated | ❌ |
+| **Phase 2C Auth Flows** | ❌ **Not yet** |
 
 ---
 
-## 10. Next Steps
+## 10. Next Step
 
-### Immediate (user)
-
-1. Create **`flash-nexus/.env.local`** with dev Supabase URL, anon key, service role key.
-2. Run `npx supabase login` and `npx supabase link --project-ref YOUR_PROJECT_REF`.
-3. Run `npm run db:push`.
-4. Run seed SQL in Dashboard SQL Editor.
-5. Complete `database/SMOKE_TEST_PHASE_2B.md` checklist.
-6. Run `npm run db:types`.
-7. Update this doc status to ✅ Complete.
-
-### Then: Phase 2C — Auth Flows
-
-- Profile creation on signup (server actions)
-- Login / logout / register wiring
-- Root middleware with `updateSession`
-- Dashboard route guards
-- No financial logic yet
+1. Complete steps in **Section 2** above.
+2. Re-run Phase 2B-2 (or ask agent to retry).
+3. Then start **Phase 2C — Auth Flows**.
 
 ---
 

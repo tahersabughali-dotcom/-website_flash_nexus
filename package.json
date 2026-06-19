@@ -1,0 +1,20 @@
+{
+  "name": "flash-nexus-workspace",
+  "private": true,
+  "description": "Run npm scripts from workspace root — app lives in flash-nexus/",
+  "scripts": {
+    "dev": "npm run dev --prefix flash-nexus",
+    "build": "npm run build --prefix flash-nexus",
+    "start": "npm run start --prefix flash-nexus",
+    "lint": "npm run lint --prefix flash-nexus",
+    "verify:env": "npm run verify:env --prefix flash-nexus",
+    "db:fetch-service-role": "npm run db:fetch-service-role --prefix flash-nexus",
+    "db:apply-all": "npm run db:apply-all --prefix flash-nexus",
+    "db:sync-migrations": "npm run db:sync-migrations --prefix flash-nexus",
+    "db:push": "npm run db:push --prefix flash-nexus",
+    "db:seed": "npm run db:seed --prefix flash-nexus",
+    "db:link": "npm run db:link --prefix flash-nexus",
+    "db:report": "npm run db:report --prefix flash-nexus",
+    "db:types": "npm run db:types --prefix flash-nexus"
+  }
+}
